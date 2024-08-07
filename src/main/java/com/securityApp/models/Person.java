@@ -4,9 +4,9 @@ import jakarta.persistence.*;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 @Entity
 @Table (name = "Person")
 public class Person {
@@ -20,21 +20,17 @@ public class Person {
     private String username;
     @Column (name = "password")
     @NotEmpty
-    @Size(min = 2, max = 20, message = "more than 2 and less than 20")
+    @Size(min = 2, max = 2000, message = "more than 2 and less than 20")
     private String password;
+    @Column (name="role")
+    private String role;
     public Person() {};
-    public Person(String username,  String password) {
+    public Person(String username) {
         this.username = username;
-        this.password = password;
+
 
     }
 
-    @Override
-    public String toString() {
-        return "Person{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                '}';
-    }
+
+
 }
