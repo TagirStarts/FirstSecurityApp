@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create/Edit User</title>
+</head>
+<body>
+<h1>Create/Edit User</h1>
+<a href="/logout" class="btn btn-warning">Logout</a>
+<form th:action="@{/admin/users/save}" th:object="${user}" method="post">
+    <label for="username">Username:</label>
+    <input type="text" id="username" th:field="*{username}"/>
+    <br/>
+    <label for="password">Password:</label>
+    <input type="password" id="password" th:field="*{password}"/>
+    <br/>
+    <input type="submit" value="Save"/>
+</form>
+<a href="/admin/users">Back to User List</a>
+</body>
+</html>

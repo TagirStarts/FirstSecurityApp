@@ -1,6 +1,5 @@
 package com.securityApp.util;
 
-
 import com.securityApp.models.Person;
 import com.securityApp.services.PersonDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,7 @@ import org.springframework.validation.Validator;
 @Component
 public class PersonValidator implements Validator {
     private final PersonDetailService personDetailService;
+
     @Autowired
     public PersonValidator(PersonDetailService personDetailService) {
         this.personDetailService = personDetailService;
@@ -30,7 +30,6 @@ public class PersonValidator implements Validator {
         } catch (UsernameNotFoundException ignored) {
             return;
         }
-        errors.rejectValue("username", "", "Invalid username");
-
+        errors.rejectValue("username", "", "Username already taken");
     }
 }

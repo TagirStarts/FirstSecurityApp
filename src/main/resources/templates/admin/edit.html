@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Edit Person</title>
+
+</head>
+<body>
+<h1>Edit Person</h1>
+<a href="/logout" class="btn btn-warning">Logout</a>
+<form th:action="@{/admin/persons/update/{id}(id=${person.id})}" th:object="${person}" method="post">
+    <label for="username">Username:</label>
+    <input type="text" id="username" th:field="*{username}" required />
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" th:field="*{password}" required />
+
+    <label>Roles:</label>
+    <div th:each="role : ${roles}">
+        <label>
+            <input type="checkbox" th:field="*{roles}" th:value="${role.id}" th:text="${role.name}" />
+        </label>
+    </div>
+
+    <button type="submit">Save</button>
+    <a href="/admin/persons">Cancel</a>
+</form>
+</body>
+</html>

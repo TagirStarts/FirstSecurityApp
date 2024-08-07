@@ -4,28 +4,37 @@ import com.securityApp.models.Person;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
 import java.util.Collection;
-import java.util.Collections;
+import java.util.stream.Collectors;
 
 public class PersonDetails implements UserDetails {
+
     private final Person person;
+
     public PersonDetails(Person person) {
         this.person = person;
-    };
+    }
+
+    public Person getPerson() {
+        return person;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(person.getRole()));
+        return person.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override
     public String getPassword() {
-        return this.person.getPassword();
+        return person.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return this.person.getUsername();
+        return person.getUsername();
     }
 
     @Override
@@ -46,8 +55,5 @@ public class PersonDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-    public Person getPerson() {
-        return person;
     }
 }
