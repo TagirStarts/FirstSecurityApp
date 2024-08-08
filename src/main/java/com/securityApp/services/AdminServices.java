@@ -3,6 +3,7 @@ package com.securityApp.services;
 import com.securityApp.models.Person;
 import com.securityApp.repositories.PeopleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,10 +13,12 @@ import java.util.Optional;
 public class AdminServices {
 
     private final PeopleRepository peopleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public AdminServices(PeopleRepository peopleRepository) {
+    public AdminServices(PeopleRepository peopleRepository, PasswordEncoder passwordEncoder) {
         this.peopleRepository = peopleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<Person> findAll() {
@@ -28,6 +31,11 @@ public class AdminServices {
     }
 
     public void savePerson(Person person) {
+        Optional<Person> existingPerson = peopleRepository.findByUsername(person.getUsername());
+        if (existingPerson.isPresent() && existingPerson.get().getId() != person.getId()) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        person.setPassword(passwordEncoder.encode(person.getPassword()));
         peopleRepository.save(person);
     }
 

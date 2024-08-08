@@ -27,6 +27,9 @@ public class RegistrationService {
 
     @Transactional
     public void register(Person person) {
+        if (peopleRepository.findByUsername(person.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Username already exists");
+        }
         person.setPassword(passwordEncoder.encode(person.getPassword()));
         Optional<Role> userRole = roleRepository.findByName("ROLE_USER");
         userRole.ifPresent(role -> person.getRoles().add(role));

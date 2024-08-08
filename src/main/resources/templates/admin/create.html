@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Create Person</title>
+</head>
+<body>
+<h1>Create Person</h1>
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Logout</button>
+</form>
+<form th:action="@{/admin/persons/save}" th:object="${person}" method="post">
+    <label for="username">Username:</label>
+    <input type="text" id="username" th:field="*{username}" required />
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" th:field="*{password}" required />
+
+    <label>Roles:</label>
+    <div th:each="role : ${roles}">
+        <label>
+            <input type="checkbox" th:value="${role.id}" th:name="roleIds" th:text="${role.name}" />
+        </label>
+    </div>
+    <div th:if="${error}" th:text="${error}" style="color:red;"></div>
+    <button type="submit">Create</button>
+    <a href="/admin/persons">Cancel</a>
+</form>
+</body>
+</html>

@@ -6,7 +6,9 @@
 </head>
 <body>
 <h1>Edit Person</h1>
-<a href="/logout" class="btn btn-warning">Logout</a>
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Logout</button>
+</form>
 <form th:action="@{/admin/persons/update/{id}(id=${person.id})}" th:object="${person}" method="post">
     <label for="username">Username:</label>
     <input type="text" id="username" th:field="*{username}" required />
@@ -14,13 +16,18 @@
     <label for="password">Password:</label>
     <input type="password" id="password" th:field="*{password}" required />
 
-    <label>Roles:</label>
-    <div th:each="role : ${roles}">
-        <label>
-            <input type="checkbox" th:field="*{roles}" th:value="${role.id}" th:text="${role.name}" />
-        </label>
-    </div>
-
+    <form th:action="@{/admin/persons/update/{id}(id=${person.id})}" method="post">
+        <!-- username и password -->
+        <label>Roles:</label>
+        <div th:each="role : ${roles}">
+            <label>
+                <input type="checkbox" th:value="${role.id}" th:name="roleIds" th:checked="${person.roles.contains(role)}" />
+                <span th:text="${role.name}"></span>
+            </label>
+        </div>
+        <button type="submit">Save</button>
+    </form>
+    <div th:if="${error}" th:text="${error}" style="color:red;"></div>
     <button type="submit">Save</button>
     <a href="/admin/persons">Cancel</a>
 </form>

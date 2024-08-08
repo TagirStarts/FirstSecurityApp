@@ -6,7 +6,7 @@
 </head>
 <body>
 <h1>User List</h1>
-<a href="/logout" class="btn btn-warning">Logout</a>
+
 <table>
     <thead>
     <tr>
@@ -29,6 +29,10 @@
     </tr>
     </tbody>
 </table>
+<a href="/admin/persons/new">Create New Person</a>
 <a href="/admin" class="btn">Back to Home</a>
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Logout</button>
+</form>
 </body>
 </html>
