@@ -6,7 +6,9 @@
 </head>
 <body>
     <h1>View User</h1>
-    <a href="/logout" class="btn btn-warning">Logout</a>
+    <form th:action="@{/logout}" method="post">
+        <button type="submit">Logout</button>
+    </form>
     <p>ID: <span th:text="${person.id}"></span></p>
     <p>Username: <span th:text="${person.username}"></span></p>
     <p>Roles: <span th:text="${person.rolesAsString}"></span></p>

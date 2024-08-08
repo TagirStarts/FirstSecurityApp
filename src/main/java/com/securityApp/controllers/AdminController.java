@@ -66,10 +66,44 @@ public class AdminController {
     }
 
     @PostMapping("/persons/update/{id}")
-    public String updatePerson(@PathVariable Integer id, @RequestParam List<Integer> roleIds) {
-        Person person = adminServices.findById(id);
-        if (person != null) {
-            person.getRoles().clear();
+    public String updatePerson(@PathVariable Integer id, @RequestParam List<Integer> roleIds, Model model) {
+        try {
+            Person person = adminServices.findById(id);
+            if (person != null) {
+                person.getRoles().clear();
+                for (Integer roleId : roleIds) {
+                    Role role = roleService.findById(roleId);
+                    if (role != null) {
+                        person.getRoles().add(role);
+                    }
+                }
+                adminServices.savePerson(person);
+            }
+            return "redirect:/admin/persons";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            Person person = adminServices.findById(id);
+            model.addAttribute("person", person);
+            model.addAttribute("roles", roleService.findAll());
+            return "admin/edit";
+        }
+    }
+
+        @GetMapping("/persons/delete/{id}")
+    public String deletePerson(@PathVariable Integer id) {
+        adminServices.deleteById(id);
+        return "redirect:/admin/persons";
+    }
+    @GetMapping("/persons/new")
+    public String createPersonForm(Model model) {
+        model.addAttribute("person", new Person());
+        model.addAttribute("roles", roleService.findAll());
+        return "admin/create";
+    }
+
+    @PostMapping("/persons/save")
+    public String saveNewPerson(@ModelAttribute("person") Person person, @RequestParam List<Integer> roleIds, Model model) {
+        try {
             for (Integer roleId : roleIds) {
                 Role role = roleService.findById(roleId);
                 if (role != null) {
@@ -77,13 +111,12 @@ public class AdminController {
                 }
             }
             adminServices.savePerson(person);
+            return "redirect:/admin/persons";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("roles", roleService.findAll());
+            return "admin/create";
         }
-        return "redirect:/admin/persons";
     }
 
-    @GetMapping("/persons/delete/{id}")
-    public String deletePerson(@PathVariable Integer id) {
-        adminServices.deleteById(id);
-        return "redirect:/admin/persons";
-    }
 }
