@@ -1,7 +1,7 @@
 package com.securityApp.util;
 
 import com.securityApp.models.Person;
-import com.securityApp.services.PersonDetailService;
+import com.securityApp.services.PersonDetailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
@@ -10,11 +10,11 @@ import org.springframework.validation.Validator;
 
 @Component
 public class PersonValidator implements Validator {
-    private final PersonDetailService personDetailService;
+    private final PersonDetailServiceImpl personDetailServiceImpl;
 
     @Autowired
-    public PersonValidator(PersonDetailService personDetailService) {
-        this.personDetailService = personDetailService;
+    public PersonValidator(PersonDetailServiceImpl personDetailServiceImpl) {
+        this.personDetailServiceImpl = personDetailServiceImpl;
     }
 
     @Override
@@ -26,7 +26,7 @@ public class PersonValidator implements Validator {
     public void validate(Object target, Errors errors) {
         Person person = (Person) target;
         try {
-            personDetailService.loadUserByUsername(person.getUsername());
+            personDetailServiceImpl.loadUserByUsername(person.getUsername());
         } catch (UsernameNotFoundException ignored) {
             return;
         }

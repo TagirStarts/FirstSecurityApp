@@ -2,34 +2,29 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <title>Edit Person</title>
-
 </head>
 <body>
 <h1>Edit Person</h1>
-<form th:action="@{/logout}" method="post">
-    <button type="submit">Logout</button>
-</form>
-<form th:action="@{/admin/persons/update/{id}(id=${person.id})}" th:object="${person}" method="post">
+<form th:action="@{/admin/update/{id}(id=${person.id})}" th:object="${person}" method="post">
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <span th:text="${error}"></span>
+    </div>
+
     <label for="username">Username:</label>
-    <input type="text" id="username" th:field="*{username}" required />
+    <input type="text" id="username" th:field="*{username}" required>
+    <br>
 
     <label for="password">Password:</label>
-    <input type="password" id="password" th:field="*{password}" required />
+    <input type="password" id="password" th:field="*{password}">
+    <br>
 
-    <form th:action="@{/admin/persons/update/{id}(id=${person.id})}" method="post">
-        <!-- username и password -->
-        <label>Roles:</label>
-        <div th:each="role : ${roles}">
-            <label>
-                <input type="checkbox" th:value="${role.id}" th:name="roleIds" th:checked="${person.roles.contains(role)}" />
-                <span th:text="${role.name}"></span>
-            </label>
-        </div>
-        <button type="submit">Save</button>
-    </form>
-    <div th:if="${error}" th:text="${error}" style="color:red;"></div>
-    <button type="submit">Save</button>
-    <a href="/admin/persons">Cancel</a>
+    <label for="role">Role:</label>
+    <select id="role" name="roleId" required>
+        <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}" th:selected="${person.roles.contains(role)}"></option>
+    </select>
+    <br>
+
+    <button type="submit">Update</button>
 </form>
 </body>
 </html>

@@ -28,7 +28,7 @@ public class Person {
     @Size(min = 2, max = 2000, message = "more than 2 and less than 20")
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "person_roles",
             joinColumns = @JoinColumn(name = "person_id"),

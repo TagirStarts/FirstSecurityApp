@@ -1,7 +1,6 @@
 package com.securityApp.config;
 
-import com.securityApp.services.PersonDetailService;
-import com.securityApp.security.LoginSuccessHandler;
+import com.securityApp.services.PersonDetailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,17 +13,20 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    private final PersonDetailService personDetailService;
+    private final PersonDetailServiceImpl personDetailServiceImpl;
+    private final AuthenticationSuccessHandler loginSuccessHandler;
 
     @Autowired
-    public SecurityConfig(PersonDetailService personDetailService) {
-        this.personDetailService = personDetailService;
+    public SecurityConfig(PersonDetailServiceImpl personDetailServiceImpl, AuthenticationSuccessHandler loginSuccessHandler) {
+        this.personDetailServiceImpl = personDetailServiceImpl;
+        this.loginSuccessHandler = loginSuccessHandler;
     }
 
     @Bean
@@ -38,7 +40,7 @@ public class SecurityConfig {
                 .formLogin((form) -> form
                         .loginPage("/auth/login")
                         .loginProcessingUrl("/process_login")
-                        .successHandler(new CustomAuthenticationSuccessHandler()) // Изменено на CustomAuthenticationSuccessHandler
+                        .successHandler(loginSuccessHandler)
                         .failureUrl("/auth/login?error")
                 )
                 .logout((logout) -> logout
@@ -52,7 +54,7 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(personDetailService);
+        authProvider.setUserDetailsService(personDetailServiceImpl);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }

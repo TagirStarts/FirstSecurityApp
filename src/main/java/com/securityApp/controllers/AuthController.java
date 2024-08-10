@@ -1,7 +1,7 @@
 package com.securityApp.controllers;
 
 import com.securityApp.models.Person;
-import com.securityApp.services.RegistrationService;
+import com.securityApp.services.RegistrationServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,11 +15,11 @@ import jakarta.validation.Valid;
 @Controller
 public class AuthController {
 
-    private final RegistrationService registrationService;
+    private final RegistrationServiceImpl registrationServiceImpl;
 
     @Autowired
-    public AuthController(RegistrationService registrationService) {
-        this.registrationService = registrationService;
+    public AuthController(RegistrationServiceImpl registrationServiceImpl) {
+        this.registrationServiceImpl = registrationServiceImpl;
     }
 
     @GetMapping("/auth/login")
@@ -34,11 +34,17 @@ public class AuthController {
     }
 
     @PostMapping("/auth/registration")
-    public String performRegistration(@ModelAttribute("person") @Valid Person person, BindingResult bindingResult) {
+    public String performRegistration(@ModelAttribute("person") @Valid Person person, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             return "auth/registration";
         }
-        registrationService.register(person);
-        return "redirect:/auth/login";
+        try {
+            registrationServiceImpl.register(person);
+            return "redirect:/auth/login";
+        } catch ( IllegalArgumentException e ) {
+            model.addAttribute("error", e.getMessage()); // Добавляем сообщение об ошибке в модель
+            return "auth/registration";
+        }
+
     }
 }
