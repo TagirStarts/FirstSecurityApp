@@ -38,11 +38,13 @@ public class AdminServicesImpl {
         Optional<Person> existingPerson = peopleRepository.findByUsername(person.getUsername());
 
         if (existingPerson.isPresent() && existingPerson.get().getId() != person.getId()) {
-            throw new IllegalArgumentException("Username already exists");
+            throw new IllegalArgumentException("Пользователь с таким именем уже существует");
         }
 
-        if (person.getId() == 0 || !passwordEncoder.matches(person.getPassword(), existingPerson.map(Person::getPassword).orElse(""))) {
+        if (existingPerson.isEmpty() || !passwordEncoder.matches(person.getPassword(), existingPerson.get().getPassword())) {
             person.setPassword(passwordEncoder.encode(person.getPassword()));
+        } else {
+            person.setPassword(existingPerson.get().getPassword()); // Используем существующий зашифрованный пароль
         }
 
         peopleRepository.save(person);
