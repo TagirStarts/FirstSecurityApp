@@ -72,13 +72,15 @@
 
         <!-- Content -->
         <div class="col-md-10">
-            <h1 class="h3">User List</h1>
+            <h1 class="h3">Admin panel</h1>
 
             <table class="table table-striped table-bordered">
                 <thead class="thead-dark">
                 <tr>
                     <th>ID</th>
                     <th>Username</th>
+                    <th>email</th>
+                    <th>age</th>
                     <th>Roles</th>
                     <th>Actions</th>
                 </tr>
@@ -87,6 +89,8 @@
                 <tr th:each="person : ${persons}">
                     <td th:text="${person.id}"></td>
                     <td th:text="${person.username}"></td>
+                    <td th:text="${person.email}" ></td>
+                    <td th:text="${person.age}" ></td>
                     <td th:text="${person.rolesAsString}"></td>
                     <td class="actions">
                         <!-- Измените ссылку на редактирование -->
@@ -94,6 +98,8 @@
                                 data-bs-target="#editPersonModal"
                                 th:data-person-id="${person.id}"
                                 th:data-person-username="${person.username}"
+                                th:data-person-email="${person.email}"
+                                th:data-person-age="${person.age}"
                                 th:data-person-roles="${person.rolesAsString}">
                             Edit
                         </button>
@@ -126,6 +132,14 @@
                                 <div class="mb-3">
                                     <label for="username" class="form-label">Username:</label>
                                     <input type="text" id="username" th:field="*{username}" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email:</label>
+                                    <input type="text" id="email" th:field="*{email}" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="age" class="form-label">Age:</label>
+                                    <input type="text" id="age" th:field="*{age}" class="form-control" required>
                                 </div>
 
                                 <div class="mb-3">
@@ -166,6 +180,14 @@
                                     <label for="editUsername" class="form-label">Username:</label>
                                     <input type="text" id="editUsername" name="username" class="form-control" required>
                                 </div>
+                                <div class="mb-3">
+                                    <label for="editEmail" class="form-label">Email:</label>
+                                    <input type="text" id="editEmail" name="email" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editAge" class="form-label">Age:</label>
+                                    <input type="text" id="editAge" name="age" class="form-control" required>
+                                </div>
 
                                 <div class="mb-3">
                                     <label for="editPassword" class="form-label">Password:</label>
@@ -185,8 +207,6 @@
                     </div>
                 </div>
             </div>
-
-            <a href="/admin" class="btn btn-secondary">Back to Home</a>
         </div>
     </div>
 </div>
@@ -199,12 +219,16 @@
             const button = event.relatedTarget; // Кнопка, которая вызвала модальное окно
             const personId = button.getAttribute('data-person-id');
             const personUsername = button.getAttribute('data-person-username');
+            const personEmail = button.getAttribute('data-person-email');
+            const personAge = button.getAttribute('data-person-age');
             const personRoles = button.getAttribute('data-person-roles');
 
             // Заполнение полей формы
             const form = document.getElementById('editPersonForm');
             form.action = `/admin/update/${personId}`;
             document.getElementById('editUsername').value = personUsername;
+            document.getElementById('editEmail').value = personEmail;
+            document.getElementById('editAge').value = personAge;
 
             // Обработка выпадающего списка ролей
             const roleSelect = document.getElementById('editRole');
