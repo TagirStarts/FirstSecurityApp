@@ -79,6 +79,8 @@
                 <tr>
                     <th>ID</th>
                     <th>Username</th>
+                    <th>FirstName</th>
+                    <th>LastName</th>
                     <th>email</th>
                     <th>age</th>
                     <th>Roles</th>
@@ -89,6 +91,8 @@
                 <tr th:each="person : ${persons}">
                     <td th:text="${person.id}"></td>
                     <td th:text="${person.username}"></td>
+                    <td th:text="${person.firstname}"></td>
+                    <td th:text="${person.lastname}"></td>
                     <td th:text="${person.email}" ></td>
                     <td th:text="${person.age}" ></td>
                     <td th:text="${person.rolesAsString}"></td>
@@ -98,6 +102,8 @@
                                 data-bs-target="#editPersonModal"
                                 th:data-person-id="${person.id}"
                                 th:data-person-username="${person.username}"
+                                th:data-person-firstname="${person.firstname}"
+                                th:data-person-lastname="${person.lastname}"
                                 th:data-person-email="${person.email}"
                                 th:data-person-age="${person.age}"
                                 th:data-person-roles="${person.rolesAsString}">
@@ -132,6 +138,14 @@
                                 <div class="mb-3">
                                     <label for="username" class="form-label">Username:</label>
                                     <input type="text" id="username" th:field="*{username}" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="firstname" class="form-label">FirstName:</label>
+                                    <input type="text" id="firstname" th:field="*{firstname}" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="lastname" class="form-label">LastName:</label>
+                                    <input type="text" id="lastname" th:field="*{lastname}" class="form-control" required>
                                 </div>
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Email:</label>
@@ -181,6 +195,14 @@
                                     <input type="text" id="editUsername" name="username" class="form-control" required>
                                 </div>
                                 <div class="mb-3">
+                                    <label for="editFirstname" class="form-label">Firstname:</label>
+                                    <input type="text" id="editFirstname" name="firstname" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editLastname" class="form-label">Lastname:</label>
+                                    <input type="text" id="editLastname" name="lastname" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
                                     <label for="editEmail" class="form-label">Email:</label>
                                     <input type="text" id="editEmail" name="email" class="form-control" required>
                                 </div>
@@ -219,6 +241,8 @@
             const button = event.relatedTarget; // Кнопка, которая вызвала модальное окно
             const personId = button.getAttribute('data-person-id');
             const personUsername = button.getAttribute('data-person-username');
+            const personLastname = button.getAttribute('data-person-lastname');
+            const personFirstname = button.getAttribute('data-person-firstname');
             const personEmail = button.getAttribute('data-person-email');
             const personAge = button.getAttribute('data-person-age');
             const personRoles = button.getAttribute('data-person-roles');
@@ -228,6 +252,8 @@
             form.action = `/admin/update/${personId}`;
             document.getElementById('editUsername').value = personUsername;
             document.getElementById('editEmail').value = personEmail;
+            document.getElementById('editFirstname').value = personFirstname;
+            document.getElementById('editLastname').value = personLastname;
             document.getElementById('editAge').value = personAge;
 
             // Обработка выпадающего списка ролей

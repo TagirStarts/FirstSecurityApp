@@ -23,14 +23,26 @@ public class Person {
     @Size(min = 2, max = 20, message = "more than 2 and less than 20")
     private String username;
 
+    @Column(name = "firstname")
+    @NotEmpty
+    @Size(min = 2, max = 20, message = "more than 2 and less than 20")
+    private String firstname;
+
+    @Column(name = "lastname")
+    @NotEmpty
+    @Size(min = 2, max = 20, message = "more than 2 and less than 20")
+    private String lastname;
+
     @Column(name = "password")
     @NotEmpty
     @Size(min = 2, max = 200, message = "more than 2 and less than 200")
     private String password;
+
     @Column (name = "email")
     @NotEmpty
     @Size(min = 2, max = 2000, message = "more than 2 and less than 20")
     private String email;
+
     @Column (name = "age")
     private int age;
 
