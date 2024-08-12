@@ -62,20 +62,48 @@ public class AdminController {
         }
 
         model.addAttribute("persons", persons);
-        model.addAttribute("person", new Person()); // Для формы создания
         model.addAttribute("roles", roles); // Роли для формы создания
 
         return "admin/list";
     }
 
+    @GetMapping("/create")
+    public String showCreateForm(Model model) {
+        List<Role> roles = roleServiceImpl.findAll();
+        List<Person> persons = adminServicesImpl.findAll();
+        // Получите текущего пользователя и его роли
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth.getPrincipal() instanceof UserDetails userDetails) {
+            String username = userDetails.getUsername();
+
+            Optional<Person> optionalPerson = peopleRepository.findByUsername(username);
+            if (optionalPerson.isPresent()) {
+                Person currentUser = optionalPerson.get();
+                Set<String> userRoles = currentUser.getRoles().stream()
+                        .map(Role::getName) // Предполагается, что у роли есть метод getName()
+                        .collect(Collectors.toSet());
+
+                model.addAttribute("username", username);
+                model.addAttribute("userRole", userRoles.isEmpty() ? "No Role" : userRoles.iterator().next()); // Передаем первую роль
+            } else {
+                model.addAttribute("username", "Unknown");
+                model.addAttribute("userRole", "No Role");
+            }
+        }
+        model.addAttribute("person", new Person()); // Пустой объект для создания
+        model.addAttribute("roles", roles); // Роли для формы создания
+
+        return "admin/create";
+    }
+
     @PostMapping("/save")
     public String savePerson(@ModelAttribute Person person, @RequestParam int roleId, Model model) {
         if (adminServicesImpl.usernameExists(person.getUsername())) {
-            model.addAttribute("persons", adminServicesImpl.findAll());
             model.addAttribute("roles", roleServiceImpl.findAll());
             model.addAttribute("person", person);
             model.addAttribute("error", "Пользователь с таким именем уже существует");
-            return "admin/list";
+
+            return "admin/create";
         }
 
         Role role = roleServiceImpl.findById(roleId);
@@ -84,23 +112,34 @@ public class AdminController {
             person.getRoles().add(role);
 
             try {
+                person.setPassword(passwordEncoder.encode(person.getPassword())); // Кодируем пароль
                 adminServicesImpl.savePerson(person);
             } catch (Exception e) {
-                model.addAttribute("persons", adminServicesImpl.findAll());
                 model.addAttribute("roles", roleServiceImpl.findAll());
                 model.addAttribute("person", person);
                 model.addAttribute("error", "Ошибка при сохранении пользователя");
-                return "admin/list";
+                return "admin/create";
             }
         } else {
-            model.addAttribute("persons", adminServicesImpl.findAll());
             model.addAttribute("roles", roleServiceImpl.findAll());
             model.addAttribute("person", person);
             model.addAttribute("error", "Выбранная роль не найдена");
-            return "admin/list";
+            return "admin/create";
         }
 
         return "redirect:/admin";
+    }
+
+    @GetMapping("/edit/{id}")
+    public String showEditForm(@PathVariable int id, Model model) {
+        Person person = adminServicesImpl.findById(id);
+        if (person == null) {
+            return "redirect:/admin";
+        }
+        List<Role> roles = roleServiceImpl.findAll();
+        model.addAttribute("person", person);
+        model.addAttribute("roles", roles);
+        return "admin/list";
     }
 
     @PostMapping("/update/{id}")
@@ -108,15 +147,12 @@ public class AdminController {
         Person existingPerson = adminServicesImpl.findById(id);
 
         if (existingPerson == null) {
-            model.addAttribute("persons", adminServicesImpl.findAll());
-            model.addAttribute("roles", roleServiceImpl.findAll());
-            model.addAttribute("error", "Пользователь не найден");
-            return "admin/list";
+            return "redirect:/admin";
         }
 
         if (!existingPerson.getUsername().equals(person.getUsername()) && adminServicesImpl.usernameExists(person.getUsername())) {
-            model.addAttribute("persons", adminServicesImpl.findAll());
             model.addAttribute("roles", roleServiceImpl.findAll());
+            model.addAttribute("person", person);
             model.addAttribute("error", "Пользователь с таким именем уже существует");
             return "admin/list";
         }
@@ -135,8 +171,8 @@ public class AdminController {
         if (role != null) {
             existingPerson.getRoles().add(role);
         } else {
-            model.addAttribute("persons", adminServicesImpl.findAll());
             model.addAttribute("roles", roleServiceImpl.findAll());
+            model.addAttribute("person", existingPerson);
             model.addAttribute("error", "Выбранная роль не найдена");
             return "admin/list";
         }
@@ -144,15 +180,14 @@ public class AdminController {
         try {
             adminServicesImpl.savePerson(existingPerson);
         } catch (Exception e) {
-            model.addAttribute("persons", adminServicesImpl.findAll());
             model.addAttribute("roles", roleServiceImpl.findAll());
+            model.addAttribute("person", existingPerson);
             model.addAttribute("error", "Ошибка при сохранении пользователя");
             return "admin/list";
         }
 
         return "redirect:/admin";
     }
-
 
     @GetMapping("/delete/{id}")
     public String deletePerson(@PathVariable int id) {
