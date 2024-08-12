@@ -38,11 +38,6 @@ public class Person {
     @Size(min = 2, max = 200, message = "more than 2 and less than 200")
     private String password;
 
-    @Column (name = "email")
-    @NotEmpty
-    @Size(min = 2, max = 2000, message = "more than 2 and less than 20")
-    private String email;
-
     @Column (name = "age")
     private int age;
 
@@ -56,9 +51,10 @@ public class Person {
 
     public Person() {}
 
-    public Person(String username, String email, int age) {
+    public Person(String username, String firstname, int age, String lastname) {
         this.username = username;
-        this.email = email;
+        this.firstname = firstname;
+        this.password = lastname;
         this.age = age;
     }
 

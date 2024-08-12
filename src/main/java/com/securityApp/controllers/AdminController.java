@@ -124,7 +124,6 @@ public class AdminController {
         existingPerson.setUsername(person.getUsername());
         existingPerson.setFirstname(person.getFirstname());
         existingPerson.setLastname(person.getLastname());
-        existingPerson.setEmail(person.getEmail());
         existingPerson.setAge(person.getAge());
 
         if (person.getPassword() != null && !person.getPassword().isEmpty()) {

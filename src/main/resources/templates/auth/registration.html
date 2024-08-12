@@ -9,7 +9,7 @@
 <h1>Registration</h1>
 <form th:action="@{/auth/registration}" th:object="${person}" method="post">
     <div>
-        <label for="username">Username:</label>
+        <label for="username">Email:</label>
         <input type="text" id="username" th:field="*{username}">
     </div>
     <div>
@@ -19,10 +19,6 @@
     <div>
         <label for="lastname">LastName:</label>
         <input type="text" id="lastname" th:field="*{lastname}">
-    </div>
-    <div>
-        <label for="email">Email:</label>
-        <input type="text" id="email" th:field="*{email}">
     </div>
     <div>
         <label for="age">Age:</label>
