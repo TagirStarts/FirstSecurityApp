@@ -60,7 +60,7 @@
         .form-container .form-select {
             margin: 0 auto; /* Убрать отступы по бокам */
             text-align: center;
-            width: 30%;
+            width: 50%; /* Изменено на 50% для большей ширины */
             padding: 5px 10px; /* Корректировка отступов внутри input/select */
         }
         .form-container .form-control {
@@ -73,7 +73,7 @@
         }
         .form-container .btn-primary {
             margin: 10px auto 0 auto;
-            width: 15%;
+            width: 20%; /* Ширина кнопки изменена на 20% */
             display: block;
             background-color: #008000;
         }
@@ -143,8 +143,8 @@
                     <label for="password">Password:</label>
                     <input type="password" id="password" th:field="*{password}" class="form-control" placeholder="Password" required>
 
-                    <label for="role">Role:</label>
-                    <select id="role" name="roleId" class="form-select" required>
+                    <label for="roles">Roles:</label>
+                    <select id="roles" name="roleIds" class="form-select" multiple required>
                         <option th:each="role : ${roles}" th:value="${role.id}" th:text="${role.name}"></option>
                     </select>
 

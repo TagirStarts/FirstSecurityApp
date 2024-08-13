@@ -2,7 +2,6 @@ package com.securityApp.controllers;
 
 import com.securityApp.models.Person;
 import com.securityApp.models.Role;
-import com.securityApp.repositories.PeopleRepository;
 import com.securityApp.services.AdminServicesImpl;
 import com.securityApp.services.RoleServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.HashSet;
 
 @Controller
 @RequestMapping("/admin")
@@ -26,35 +26,32 @@ public class AdminController {
     private final AdminServicesImpl adminServicesImpl;
     private final RoleServiceImpl roleServiceImpl;
     private final PasswordEncoder passwordEncoder;
-    private final PeopleRepository peopleRepository;
 
     @Autowired
-    public AdminController(AdminServicesImpl adminServicesImpl, RoleServiceImpl roleServiceImpl, PasswordEncoder passwordEncoder, PeopleRepository peopleRepository) {
+    public AdminController(AdminServicesImpl adminServicesImpl, RoleServiceImpl roleServiceImpl, PasswordEncoder passwordEncoder) {
         this.adminServicesImpl = adminServicesImpl;
         this.roleServiceImpl = roleServiceImpl;
         this.passwordEncoder = passwordEncoder;
-        this.peopleRepository = peopleRepository;
     }
 
     @GetMapping
     public String listPersons(Model model) {
         List<Person> persons = adminServicesImpl.findAll();
-        List<Role> roles = roleServiceImpl.findAll(); // Получите все роли для формы, если нужно
+        List<Role> roles = roleServiceImpl.findAll();
 
-        // Получите текущего пользователя и его роли
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth.getPrincipal() instanceof UserDetails userDetails) {
             String username = userDetails.getUsername();
 
-            Optional<Person> optionalPerson = peopleRepository.findByUsername(username);
+            Optional<Person> optionalPerson = adminServicesImpl.findByUsername(username);
             if (optionalPerson.isPresent()) {
                 Person currentUser = optionalPerson.get();
                 Set<String> userRoles = currentUser.getRoles().stream()
-                        .map(Role::getName) // Предполагается, что у роли есть метод getName()
+                        .map(Role::getName)
                         .collect(Collectors.toSet());
 
                 model.addAttribute("username", username);
-                model.addAttribute("userRole", userRoles.isEmpty() ? "No Role" : userRoles.iterator().next()); // Передаем первую роль
+                model.addAttribute("userRole", userRoles.isEmpty() ? "No Role" : userRoles.iterator().next());
             } else {
                 model.addAttribute("username", "Unknown");
                 model.addAttribute("userRole", "No Role");
@@ -62,7 +59,7 @@ public class AdminController {
         }
 
         model.addAttribute("persons", persons);
-        model.addAttribute("roles", roles); // Роли для формы создания
+        model.addAttribute("roles", roles);
 
         return "admin/list";
     }
@@ -70,60 +67,47 @@ public class AdminController {
     @GetMapping("/create")
     public String showCreateForm(Model model) {
         List<Role> roles = roleServiceImpl.findAll();
-        List<Person> persons = adminServicesImpl.findAll();
-        // Получите текущего пользователя и его роли
+        model.addAttribute("person", new Person());
+        model.addAttribute("roles", roles);
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth.getPrincipal() instanceof UserDetails userDetails) {
             String username = userDetails.getUsername();
 
-            Optional<Person> optionalPerson = peopleRepository.findByUsername(username);
+            Optional<Person> optionalPerson = adminServicesImpl.findByUsername(username);
             if (optionalPerson.isPresent()) {
                 Person currentUser = optionalPerson.get();
                 Set<String> userRoles = currentUser.getRoles().stream()
-                        .map(Role::getName) // Предполагается, что у роли есть метод getName()
+                        .map(Role::getName)
                         .collect(Collectors.toSet());
 
                 model.addAttribute("username", username);
-                model.addAttribute("userRole", userRoles.isEmpty() ? "No Role" : userRoles.iterator().next()); // Передаем первую роль
+                model.addAttribute("userRole", userRoles.isEmpty() ? "No Role" : userRoles.iterator().next());
             } else {
                 model.addAttribute("username", "Unknown");
                 model.addAttribute("userRole", "No Role");
             }
         }
-        model.addAttribute("person", new Person()); // Пустой объект для создания
-        model.addAttribute("roles", roles); // Роли для формы создания
 
         return "admin/create";
     }
 
     @PostMapping("/save")
-    public String savePerson(@ModelAttribute Person person, @RequestParam int roleId, Model model) {
+    public String savePerson(@ModelAttribute Person person, @RequestParam List<Integer> roleIds, Model model) {
         if (adminServicesImpl.usernameExists(person.getUsername())) {
             model.addAttribute("roles", roleServiceImpl.findAll());
             model.addAttribute("person", person);
             model.addAttribute("error", "Пользователь с таким именем уже существует");
-
             return "admin/create";
         }
 
-        Role role = roleServiceImpl.findById(roleId);
-        if (role != null) {
-            person.getRoles().clear();
-            person.getRoles().add(role);
-
-            try {
-                person.setPassword(passwordEncoder.encode(person.getPassword())); // Кодируем пароль
-                adminServicesImpl.savePerson(person);
-            } catch (Exception e) {
-                model.addAttribute("roles", roleServiceImpl.findAll());
-                model.addAttribute("person", person);
-                model.addAttribute("error", "Ошибка при сохранении пользователя");
-                return "admin/create";
-            }
-        } else {
+        try {
+            person.setPassword(passwordEncoder.encode(person.getPassword()));
+            adminServicesImpl.assignRolesToPerson(person, new HashSet<>(roleIds)); // Convert List to Set
+        } catch (Exception e) {
             model.addAttribute("roles", roleServiceImpl.findAll());
             model.addAttribute("person", person);
-            model.addAttribute("error", "Выбранная роль не найдена");
+            model.addAttribute("error", "Ошибка при сохранении пользователя");
             return "admin/create";
         }
 
@@ -143,13 +127,14 @@ public class AdminController {
     }
 
     @PostMapping("/update/{id}")
-    public String updatePerson(@PathVariable int id, @RequestParam int roleId, @ModelAttribute Person person, Model model) {
+    public String updatePerson(@PathVariable int id, @RequestParam List<Integer> roleIds, @ModelAttribute Person person, Model model) {
         Person existingPerson = adminServicesImpl.findById(id);
 
         if (existingPerson == null) {
             return "redirect:/admin";
         }
 
+        // Check for existing username conflict
         if (!existingPerson.getUsername().equals(person.getUsername()) && adminServicesImpl.usernameExists(person.getUsername())) {
             model.addAttribute("roles", roleServiceImpl.findAll());
             model.addAttribute("person", person);
@@ -157,28 +142,17 @@ public class AdminController {
             return "admin/list";
         }
 
+        // Update non-sensitive fields
         existingPerson.setUsername(person.getUsername());
         existingPerson.setFirstname(person.getFirstname());
         existingPerson.setLastname(person.getLastname());
         existingPerson.setAge(person.getAge());
 
-        if (person.getPassword() != null && !person.getPassword().isEmpty()) {
-            existingPerson.setPassword(passwordEncoder.encode(person.getPassword()));
-        }
 
-        existingPerson.getRoles().clear();
-        Role role = roleServiceImpl.findById(roleId);
-        if (role != null) {
-            existingPerson.getRoles().add(role);
-        } else {
-            model.addAttribute("roles", roleServiceImpl.findAll());
-            model.addAttribute("person", existingPerson);
-            model.addAttribute("error", "Выбранная роль не найдена");
-            return "admin/list";
-        }
 
+        // Update roles
         try {
-            adminServicesImpl.savePerson(existingPerson);
+            adminServicesImpl.assignRolesToPerson(existingPerson, new HashSet<>(roleIds)); // Convert List to Set
         } catch (Exception e) {
             model.addAttribute("roles", roleServiceImpl.findAll());
             model.addAttribute("person", existingPerson);
@@ -188,6 +162,7 @@ public class AdminController {
 
         return "redirect:/admin";
     }
+
 
     @GetMapping("/delete/{id}")
     public String deletePerson(@PathVariable int id) {
