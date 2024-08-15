@@ -54,7 +54,7 @@ public class AdminServicesImpl {
             // Check if a new password is provided
             if (person.getPassword() == null || person.getPassword().isEmpty()) {
                 // Retain the existing password
-                person.setPassword(existingPerson.getPassword());
+                person.setPassword(passwordEncoder.encode(existingPerson.getPassword()));
             } else {
                 // Encode the new password
                 person.setPassword(passwordEncoder.encode(person.getPassword()));
